@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Flood Incident Assessment System (ICS)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-group">
+                <div class="logo-icon">🏛️</div>
+                <div>
+                    <h1>National Flood Incident Command & Severity Assessment Portal</h1>
+                    <p class="subtitle">Official Hydrological Triage Standards &bull; Multi-Stage Vision Grounding + Calibrated ML Consensus</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <span class="status-indicator"></span>
+                <span>Government Incident Command Online</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Scale Reference Banner -->
+        <section class="scale-banner">
+            <div class="scale-item s1"><span>1</span> Normal / Dry</div>
+            <div class="scale-item s2"><span>2</span> Wet Weather</div>
+            <div class="scale-item s3"><span>3</span> Minor Puddles</div>
+            <div class="scale-item s4"><span>4</span> Shin-Deep</div>
+            <div class="scale-item s5"><span>5</span> Wheel-Height</div>
+            <div class="scale-item s6"><span>6</span> Waist-Deep</div>
+            <div class="scale-item s7"><span>7</span> 1st Floor Submerged</div>
+            <div class="scale-item s8"><span>8</span> Rooftop Stranded</div>
+            <div class="scale-item s9"><span>9</span> Structural Collapse</div>
+            <div class="scale-item s10"><span>10</span> Fatalities / Dead Body</div>
+        </section>
+
+        <div class="grid-layout">
+            <!-- Left Panel: Input Section -->
+            <div class="card input-card">
+                <div class="card-header">
+                    <h2>Incident Evidence Intake</h2>
+                    <div class="tabs">
+                        <button class="tab-btn active" id="tabPhotoBtn" onclick="switchTab('photo')">Photo Evidence</button>
+                        <button class="tab-btn" id="tabTextBtn" onclick="switchTab('text')">Field Report / Keywords</button>
+                    </div>
+                </div>
+
+                <!-- Tab 1: Photo Upload -->
+                <div id="tabPhoto" class="tab-pane active">
+                    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+                        <div class="dropzone-content" id="dropzonePrompt">
+                            <div class="upload-icon">📸</div>
+                            <h3>Upload Incident Photo Evidence</h3>
+                            <p>Drag & drop disaster photo or browse local files</p>
+                            <span class="file-hint">Auto-normalized (JPEG, PNG, HEIC, WebP, etc.)</span>
+                        </div>
+                        <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+                            <img id="imagePreview" src="" alt="Selected Incident Photo">
+                            <button type="button" class="btn-remove" onclick="removeImage(event)" title="Remove image">✕</button>
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button id="analyzePhotoBtn" class="btn btn-primary" onclick="analyzePhoto()" disabled>
+                            <span id="btnPhotoText">⚡ Execute Incident Triage & Verification</span>
+                            <span id="btnPhotoSpinner" class="spinner" style="display:none;"></span>
+                        </button>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="presets-section">
+                        <h4>Test Disaster Incident Scenarios:</h4>
+                        <div class="preset-chips">
+                            <button type="button" class="chip" onclick="loadPreset(1)">🟢 Lvl 1: Normal Sunny Pavement</button>
+                            <button type="button" class="chip" onclick="loadPreset(3)">🟡 Lvl 3: Ankle-Deep Curb Puddle</button>
+                            <button type="button" class="chip" onclick="loadPreset(5)">🟠 Lvl 5: Knee-Deep Stalled Cars</button>
+                            <button type="button" class="chip" onclick="loadPreset(7)">🔴 Lvl 7: Cars Submerged to Roof</button>
+                            <button type="button" class="chip" onclick="loadPreset(8)">🚨 Lvl 8: Rooftop Stranded Victims</button>
+                            <button type="button" class="chip" onclick="loadPreset(10)">🟣 Lvl 10: Fatalities / Dead Body in Water</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Text / Keywords -->
+                <div id="tabText" class="tab-pane">
+                    <p class="tab-hint">Enter field officer observations, dispatch reports, or keywords:</p>
+                    <textarea id="textInput" rows="5" placeholder="e.g. knee-deep murky floodwater, stalled sedan with hazard lights, sandbags outside shops, floating trash dumpsters..."></textarea>
+                    
+                    <div class="action-bar">
+                        <button id="analyzeTextBtn" class="btn btn-primary" onclick="analyzeText()">
+                            <span id="btnTextText">⚡ Evaluate Field Report</span>
+                            <span id="btnTextSpinner" class="spinner" style="display:none;"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results Section -->
+            <div class="card results-card" id="resultsCard">
+                <div class="card-header">
+                    <h2>Official Incident Triage Report</h2>
+                    <span id="assessmentBadge" class="status-badge" style="display:none;">Audited</span>
+                </div>
+
+                <!-- Placeholder when idle -->
+                <div id="resultsPlaceholder" class="empty-state">
+                    <div class="empty-icon">🏛️</div>
+                    <h3>Awaiting Incident Evidence</h3>
+                    <p>Upload a disaster photograph or field report to initiate multi-stage physical grounding, ML consensus reconciliation, and ICS emergency protocols.</p>
+                </div>
+
+                <!-- Active Results Content -->
+                <div id="resultsContent" style="display: none;">
+                    <!-- Severity Score Hero -->
+                    <div class="severity-hero" id="severityHero">
+                        <div class="score-circle" id="scoreCircle">
+                            <span class="score-number" id="scoreVal">--</span>
+                            <span class="score-max">/ 10</span>
+                        </div>
+                        <div class="severity-meta">
+                            <div class="badge-row">
+                                <span class="badge" id="threatBadge">Threat: --</span>
+                                <span class="badge" id="femaCategoryBadge">FEMA Incident Level</span>
+                            </div>
+                            <h3 id="severityTitle">Severity Level</h3>
+                            <div class="confidence-row">
+                                <span class="badge" id="confidenceBadge">Confidence: --</span>
+                                <span class="conf-pct" id="confidencePct">--%</span>
+                            </div>
+                            <p class="conf-rationale" id="confidenceRationale"></p>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Hydrological Depth Estimate</div>
+                            <div class="metric-value" id="waterDepthVal">--</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Incident Setting</div>
+                            <div class="metric-value" id="sceneSettingVal">--</div>
+                        </div>
+                    </div>
+
+                    <!-- ICS Operational Directives -->
+                    <div class="ics-box">
+                        <div class="ics-row">
+                            <span class="ics-tag">ICS Phase:</span>
+                            <span class="ics-val" id="icsPhaseVal">--</span>
+                        </div>
+                        <div class="ics-row">
+                            <span class="ics-tag">Lead Agency:</span>
+                            <span class="ics-val" id="icsAgencyVal">--</span>
+                        </div>
+                    </div>
+
+                    <!-- AI Vision Physical Grounding Card -->
+                    <div class="info-block" id="visionBlock">
+                        <h4>🔍 Objective Visual Grounding & Submerged Landmarks</h4>
+                        <p class="vision-desc" id="visionDescText">--</p>
+                        <div class="landmarks-row">
+                            <span class="sub-label">Submerged Landmarks:</span>
+                            <div class="tags-container" id="landmarksTags"></div>
+                        </div>
+                        <div class="keywords-row" style="margin-top: 0.5rem;">
+                            <span class="sub-label">Visual Keywords:</span>
+                            <div class="tags-container" id="keywordsTags"></div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended Action -->
+                    <div class="action-alert" id="actionAlert">
+                        <div class="alert-icon">🚨</div>
+                        <div>
+                            <strong>Immediate Incident Command Orders:</strong>
+                            <p id="actionText">--</p>
+                        </div>
+                    </div>
+
+                    <!-- Consensus Details Accordion -->
+                    <div class="consensus-box" id="consensusBox">
+                        <h4>⚖️ Multi-Model Consensus Audit</h4>
+                        <div id="consensusContent"></div>
+                    </div>
+
+                    <!-- Probability Bars -->
+                    <div class="prob-section">
+                        <h4>ML Classification Probabilities (Levels 1 to 10)</h4>
+                        <div class="prob-bars" id="probBars"></div>
+                    </div>
+
+                    <!-- Raw JSON Details -->
+                    <details class="json-details">
+                        <summary>View Complete ICS Incident JSON Record</summary>
+                        <pre id="jsonViewer"><code></code></pre>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <p>National Disaster Response & Emergency Flood Assessment Portal &bull; ICS Compliant &bull; Powered by OpenRouter Vision + Calibrated Scikit-Learn Model</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
