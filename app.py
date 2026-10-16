@@ -22,7 +22,7 @@ def _load_env():
 _load_env()
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
-OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash")
 
 evaluator = GovernmentDisasterEvaluator()
 
@@ -111,13 +111,20 @@ def analyze_image_with_vision(image_bytes):
                 ]
             }
         ],
-        "temperature": 0.0
+        "temperature": 0.0,
+        "max_tokens": 1000
     }
 
     response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=30)
     
     if response.status_code != 200:
-        raise RuntimeError(f"OpenRouter API error {response.status_code}: {response.text}")
+        fallback_payload = dict(payload)
+        fallback_payload["model"] = "nvidia/nemotron-3.5-super-vl:free"
+        fallback_resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=fallback_payload, timeout=30)
+        if fallback_resp.status_code == 200:
+            response = fallback_resp
+        else:
+            raise RuntimeError(f"OpenRouter API error {response.status_code}: {response.text}")
         
     res_data = response.json()
     raw_content = res_data["choices"][0]["message"]["content"]
